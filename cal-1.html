@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title></title>
+    <style>
+      .calc {
+        width: 300px;
+        background-color: black;
+        color: white;
+      }
+      .calc-display {
+        font-size: 40px;
+        padding: 20px;
+        text-align: right;
+      }      
+      .calc-buttons-row {
+        align-content: stretch;
+        justify-content: space-between;
+        display: flex;
+        margin-bottom: .6%;
+      }
+      .calc-button {
+        font-size: 30px;
+        height: 80px;
+        width: 24.5%;
+        border: none;
+      }
+      .calc-buttons-row .double {
+        width: 49.7%;
+      }
+      .calc-buttons-row .triple {
+        width: 74.9%;
+      }
+      .calc-buttons-row .orange {
+        background-color: orange;
+        color: white;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="calc">
+      <div class="calc-display">
+        0
+      </div>
+      <div class="calc-buttons">
+        <div class="calc-buttons-row">
+          <button class="calc-button double">C</button>
+          <button class="calc-button">←</button>
+          <button class="calc-button orange">÷</button>
+        </div>
+        <div class="calc-buttons-row">
+          <button class="calc-button">7</button>
+          <button class="calc-button">8</button>
+          <button class="calc-button">9</button>
+          <button class="calc-button orange">×</button>
+        </div>
+        <div class="calc-buttons-row">
+          <button class="calc-button">4</button>
+          <button class="calc-button">5</button>
+          <button class="calc-button">6</button>
+          <button class="calc-button orange">-</button>
+        </div>
+        <div class="calc-buttons-row">
+          <button class="calc-button">1</button>
+          <button class="calc-button">2</button>
+          <button class="calc-button">3</button>
+          <button class="calc-button orange">+</button>
+        </div>
+        <div class="calc-buttons-row">
+          <button class="calc-button triple">0</button>
+          <button class="calc-button orange">=</button>
+        </div>
+      </div>
+    </div>
+    
+    <script>
+      const display = document.querySelector(".calc-display");            
+      
+      function initialize () {
+        document.querySelector(".calc-buttons").addEventListener("click", function (event) {
+          onMouseDownButton(event.target.innerText);
+        });
+      }
+      
+      function onMouseDownButton(value) {
+        let isArithmetic = isNaN(parseInt(value));
+        
+        if (isArithmetic) {
+          onMouseDownArithmetic(value);
+        } else {
+          onMouseDownNumeric(value);
+        }
+      }
+           
+      function onMouseDownNumeric(value) {        
+        if (calcBuffer === "0") {
+          calcBuffer = value;          
+        } else {
+          calcBuffer += value;
+        }
+        reRender();
+      }
+      
+      function onMouseDownArithmetic(value) {
+        console.log(value);
+
+        if((value !== '←')&&(value !== 'C')) {
+          currentOperator = value;
+          calculate(); 
+        }
+          
+        switch (value) {
+          case 'C':            
+            value = "";
+            calcBuffer = "0";
+            runningNumber = 0;                   
+            break;
+          case '←':
+            console.log("1: " +calcBuffer);
+            backspace();
+            break;
+          case '=':            
+            console.log(runningNumber);
+            value = "";
+            calcBuffer = runningNumber.toString();
+            break;
+        }   
+        reRender();
+      }
+
+      function backspace() {
+        calcBuffer = calcBuffer.slice(0, calcBuffer.length-1);
+
+        if(calcBuffer === ""){
+          calcBuffer = "0";
+        }
+        if (postOperator === "=") {
+            runningNumber = parseFloat(calcBuffer);
+        }
+        console.log("2 running: " +runningNumber);
+        console.log("2 calcBuffer: " +calcBuffer);
+      }
+      
+      function reRender(){
+        //소수점 아래 숫자들도 표현하기 위해 parseInt --> parseFloat 로 바꿈.
+        calcNumber = parseFloat(calcBuffer);  
+        display.innerText = calcNumber;
+        // if(calcBuffer === "0") {
+        //     display.innerText = runningNumber;
+        // } else {
+
+        // }
+        console.log("3: " +calcBuffer)
+      }
+      
+      function calculate () {
+        calcBuffer = "0";
+        //runningNumber에 'number1 + operator + number2' 에서 number1에 해당하는 값 할당
+        if ((runningNumber === 0)&&(currentOperator !== '=')) {
+            runningNumber = calcNumber;
+        } else {
+           //최소 구성단위가 number1 + operator + number2 + 연산자('=' or new operator)임으로
+           //계산이 정상적으로 이루어지기 위해 currentOperator 하나론 무리가 있음. 따라서 postOperator 추가하고, 
+           //사실상 calculate은 postOperator를 사용함.
+            switch (postOperator) {
+                case '+':
+                    runningNumber += calcNumber;
+                    break;
+                case '×':
+                    runningNumber *= calcNumber;
+                    break;
+                case '÷':
+                    /* Zero division Error */
+                    runningNumber /= calcNumber;
+                    break;
+                case '-':
+                    runningNumber -= calcNumber;
+                    break;            
+                }
+        }
+        //currentOperator를 postOperator에 keep 해둠.
+        postOperator = currentOperator;
+      }
+
+      // I need a property;         
+      let runningNumber = 0;      
+      let calcBuffer = "0";
+      let calcNumber = 0;      
+      let currentOperator;
+      let postOperator;
+      
+      initialize();
+    </script>      
+  </body>
+</html>
